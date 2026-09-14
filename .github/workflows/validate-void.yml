@@ -46,8 +46,9 @@ jobs:
       # reads the JSON report itself and fails the job on any assertion whose
       # `passed` is false — don't remove the next step believing
       # --stop-on-failure already covers it.
-      # Explicit paths, not "." — known-broken-under-beta/ is deliberately
-      # excluded (see that folder's file header and KNOWN-ISSUES.md #1/#2);
+      # Explicit paths, not "." — known-broken-under-beta/ and local-testing/
+      # are both deliberately excluded (see each folder's own README/file
+      # headers, and KNOWN-ISSUES.md #1/#2 for known-broken-under-beta/);
       # add a new top-level folder to this list when you add one.
       - name: Run every .void file in this repo (except known-broken-under-beta/)
         run: |

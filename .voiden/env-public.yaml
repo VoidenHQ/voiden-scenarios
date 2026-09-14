@@ -7,3 +7,6 @@ default:
     MCP_DEEPWIKI_URL: "https://mcp.deepwiki.com/mcp"
     BASE_URL: "https://httpbin.org"
     API_TOKEN: "widget-demo-token"
+    id: "widget-7"
+    customer_name: "Ada Lovelace"
+    customer_email: "ada@example.com"

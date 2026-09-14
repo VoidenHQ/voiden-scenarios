@@ -207,6 +207,29 @@ surface something on an actual mismatch (not tested — every response here
 happens to match the spec). Worth someone with access to the plugin's source
 confirming which.
 
+## 7. `mcp serve [path]` silently breaks `--profile` when `path` is a specific file, not a project directory
+
+**Found via:** `local-testing/tool-scenario/widget-tools.void`.
+**Repro:**
+```
+voiden-runner mcp serve local-testing/tool-scenario/widget-tools.void --check --profile
+# vs.
+voiden-runner mcp serve . --check --profile
+```
+**Expected:** both resolve `.voiden/env-public.yaml` the same way — `path` is
+just narrowing which file(s) get scanned for `/tool` blocks, the way every
+other multi-arg command (`run`, `tool verify`) treats a path.
+**Actual:** pointing `path` at the specific file breaks environment
+resolution entirely — every tool in the file comes back `WITHDRAWN` with
+`Cannot send request: unresolved environment variable(s): HTTPBIN_URL, id`,
+even though the exact same file with `--profile` resolves those variables
+fine under `tool verify`. Pointing `path` at the project root (`.`) instead
+works correctly. `mcp serve --help` documents `[path]` as singular (unlike
+`run`/`tool verify`'s `<paths...>`) — it appears to genuinely want a project
+directory, not a file, and silently mishandles env resolution when given one
+instead of erroring. Not tested whether a *subdirectory* (not the full root)
+has the same problem.
+
 ## The installed `voiden` skill is missing the Insomnia importer entirely
 
 Not a runner bug, but adjacent enough to note here: `~/.claude/skills/voiden/SKILL.md`
@@ -252,6 +275,22 @@ plugin itself documents.
   validation" section), not a runner bug. Fixed by adding a third
   `toolparams` row (`source: environment`) declaring `REQRES_URL` explicitly,
   same as `customer_name`/`customer_email` are declared as `source: agent`.
+
+---
+
+## Confirmed working exactly as documented — the good news
+
+`local-testing/tool-scenario/widget-tools.void` was purpose-built with five
+tools, each targeting a different verification outcome (verified / failing
++ `withdraw` / failing + `advertise-degraded` / unverified / auth-check
+gating a correct happy-path). `voiden-runner tool verify` and
+`voiden-runner mcp serve --check` both reported **every single one exactly
+as designed** — including the subtle case (`admin_purge_widgets`) where a
+row that would have passed on its own gets correctly reported as *skipped*
+rather than evaluated, because the `auth-check` row ahead of it failed
+first. Given how much of this file is about gaps, this particular piece —
+arguably the core of the whole "AI features / MCP stuff" surface — held up
+completely under direct, deliberate stress-testing.
 
 ---
 

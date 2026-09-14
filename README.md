@@ -31,6 +31,7 @@ as:
 | [`known-broken-under-beta/`](known-broken-under-beta/) | Auth types (Bearer, Basic, API Key, Digest) — **excluded from CI on purpose**, see that folder's file header and KNOWN-ISSUES.md #1/#2 |
 | [`importers/`](importers/) | The *same* Widget API (query/path params, JSON body, multipart upload, bearer auth, scripting) hand-written once per tool — Postman, Insomnia, OpenAPI, Bruno — in each one's own native format |
 | [`imported/`](imported/) | Those four native collections generated into `.void` form, one folder per source tool, so you can compare what each importer's mapping actually produces side by side — see `imported/README.md` |
+| [`local-testing/`](local-testing/) | **Not run by CI at all** — manual checklists, a deliberately-mixed-state `/tool` scenario, AI-skill test prompts, and an OAuth fill-in-your-own-credentials template. See `local-testing/README.md` |
 
 Not covered yet (next pass): HAR importer, sockets/gRPC, the stitch runner,
 and faker.
@@ -81,6 +82,10 @@ real, reproduced gap, not a mistake in the fixture. One whole file
 the same reason. Full repro steps for each, plus which are stable-only,
 beta-only, or both: **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**. Re-enable a row
 (or move the file back) once its underlying issue is fixed.
+
+## Local-only testing (not run by CI)
+
+`local-testing/` holds everything that needs a human, a browser, real credentials, or a connected agent — an MCP feature checklist (with a purpose-built `/tool` fixture hitting every verification state on demand), a prompt library for testing the `voiden` skill's own generation quality, and an OAuth template covering every grant type. See `local-testing/README.md`.
 
 ## Contributing more scenarios
 
