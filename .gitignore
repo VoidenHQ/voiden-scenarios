@@ -18,3 +18,5 @@ node_modules/
 !.voiden/env-public.yaml
 !.voiden/env-*-public.yaml
 .voiden-inherited.void
+.voiden/**
+.voiden/history/auth-types-ba0ddf15-history.json

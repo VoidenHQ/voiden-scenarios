@@ -83,7 +83,7 @@ misleading by default.
 
 ## 1. `bearer`/`basic`/`apiKey` auth send empty credentials — **beta-only regression**
 
-**File:** `auth/auth-types.void` — "Bearer Token", "Basic Auth", "API Key"
+**File:** `known-broken-under-beta/auth-types.void` — "Bearer Token", "Basic Auth", "API Key"
 sections. **Not present in `@voiden/runner@2.2.0`** — all three worked
 correctly there. Broken under `@voiden/runner@2.3.0-beta.19`, confirmed with
 `voiden-advanced-auth` already at its latest registry version (no update
@@ -95,7 +95,7 @@ this plugin yet.
 
 **Repro:**
 ```
-voiden-runner run auth/auth-types.void --env .env --no-session --show-req
+voiden-runner run known-broken-under-beta/auth-types.void --env .env --no-session --show-req
 ```
 **Expected:** `Authorization: Bearer voiden-demo-token`,
 `Authorization: Basic dm9pZGVuOnNjZW5hcmlvcw==` (voiden:scenarios), and an
@@ -113,11 +113,11 @@ column just isn't reaching the request under this plugin/core pairing.
 
 ## 2. Digest auth doesn't complete the challenge/response round trip headlessly
 
-**File:** `auth/auth-types.void` — "Digest Auth" section. **Present in both**
+**File:** `known-broken-under-beta/auth-types.void` — "Digest Auth" section. **Present in both**
 `2.2.0` and `2.3.0-beta.19`.
 **Repro:**
 ```
-voiden-runner run auth/auth-types.void --env .env --show-req --show-res
+voiden-runner run known-broken-under-beta/auth-types.void --env .env --show-req --show-res
 ```
 **Expected:** `voiden-runner` sends the initial request, receives httpbin's
 `401` + `WWW-Authenticate: Digest ...` challenge, computes the digest, and
