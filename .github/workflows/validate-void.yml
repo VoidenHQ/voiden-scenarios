@@ -1,0 +1,72 @@
+name: Validate .void files
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly canary — these hit real public APIs, so a break in httpbin,
+    # reqres.in, the countries GraphQL API, or DeepWiki's MCP server (not
+    # just a Voiden regression) would otherwise only surface on the next PR.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install @voiden/runner
+        run: npm install -g @voiden/runner
+
+      # `--stop-on-failure` (and every other exit-code flag @voiden/runner@2.2.0
+      # has) only reacts to a request-level failure (network error, unresolved
+      # variable, timeout, ...) — a *failed assertion* leaves the process exit
+      # code at 0 and doesn't count in the printed summary either. See
+      # KNOWN-ISSUES.md #0. Until that's fixed upstream, this workflow reads
+      # the JSON report itself and fails the job on any assertion whose
+      # `passed` is false — don't remove this step believing --stop-on-failure
+      # already covers it.
+      - name: Run every .void file in this repo
+        run: |
+          voiden-runner run . \
+            --env .env \
+            --no-session \
+            --show-req \
+            --show-res \
+            --output-json result.json
+
+      - name: Fail the job on any failed assertion (works around KNOWN-ISSUES.md #0)
+        run: |
+          node -e "
+            const r = require('./result.json');
+            const failures = [];
+            for (const req of r.requests) {
+              for (const entry of req.reportEntries ?? []) {
+                if (entry.type === 'assertion' && entry.passed === false) {
+                  failures.push(\`\${req.file}: \${entry.message} (got \${JSON.stringify(entry.actual)}, expected \${entry.operator} \${JSON.stringify(entry.expected)})\`);
+                }
+              }
+              if (req.success === false) {
+                failures.push(\`\${req.file}: request itself failed — \${req.error ?? 'see log above'}\`);
+              }
+            }
+            if (failures.length > 0) {
+              console.error(failures.length + ' failure(s):');
+              for (const f of failures) console.error('  - ' + f);
+              process.exit(1);
+            }
+            console.log('All ' + r.summary.total + ' requests and their assertions passed.');
+          "
+
+      - name: Upload full JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voiden-run-report
+          path: result.json

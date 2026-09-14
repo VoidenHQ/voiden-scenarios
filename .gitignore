@@ -1,0 +1,14 @@
+# Voiden local/session state — never commit
+.voiden/env-private.yaml
+.voiden/env-*-private.yaml
+.voiden/.process.env.json
+
+# voiden-runner local session/report output
+.voiden-runner/
+*.session.json
+
+# OS
+.DS_Store
+
+# Node (only relevant if voiden-runner is installed locally instead of via CI action)
+node_modules/

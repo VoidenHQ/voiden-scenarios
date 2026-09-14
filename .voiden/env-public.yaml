@@ -1,0 +1,7 @@
+default:
+  displayName: "Default"
+  variables:
+    HTTPBIN_URL: "https://httpbin.org"
+    REQRES_URL: "https://reqres.in/api"
+    GRAPHQL_URL: "https://countries.trevorblades.com/graphql"
+    MCP_DEEPWIKI_URL: "https://mcp.deepwiki.com/mcp"
