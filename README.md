@@ -12,31 +12,39 @@ as:
    Voiden app and read, not just executed.
 3. A regression net for the beta — see **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**.
    Building and actually *running* this repo (not just authoring it) surfaced
-   several real gaps in the currently-published `@voiden/runner@2.2.0`,
-   including one — assertion failures not failing the CI run — that directly
-   undermines the "validate void files in CI" pitch until it's fixed.
+   several real gaps, including one — assertion failures not failing the CI
+   run — that directly undermines the "validate void files in CI" pitch until
+   it's fixed, and one outright regression between stable and beta (auth
+   credentials not being read).
 
 ## Layout
 
 | Folder | Covers |
 |---|---|
 | [`rest/`](rest/) | HTTP methods, headers/query/path tables, all body types, options-table, cookies-table |
-| [`auth/`](auth/) | Bearer, Basic, API Key, Digest |
 | [`crud-and-chaining/`](crud-and-chaining/) | Full CRUD + `runtime-variables` chaining across sections |
 | [`graphql/`](graphql/) | Queries with and without variables |
 | [`scripting/`](scripting/) | `pre_script`/`post_script` in all three languages (JS, Python, Shell) |
 | [`assertions/`](assertions/) | Every `assertions-table` operator |
 | [`mcp/`](mcp/) | MCP client (`mcp-connection`) against a real third-party server, plus a `/tool`-decorated request for `voiden-mcp-tool` |
 | [`multi-section/`](multi-section/) | `request-separator` sectioning + cross-section chaining, isolated from any specific resource |
+| [`known-broken-under-beta/`](known-broken-under-beta/) | Auth types (Bearer, Basic, API Key, Digest) — **excluded from CI on purpose**, see that folder's file header and KNOWN-ISSUES.md #1/#2 |
 
 Not covered yet (next pass, see the bottom of this file): importers (Postman/
 Bruno/Insomnia/HAR/OpenAPI), sockets/gRPC, the stitch runner, and faker.
 
 ## Running it
 
+This repo targets the **beta** channel (`@voiden/runner@beta`, currently
+`2.3.0-beta.19` — the same version stamped in every file's frontmatter here),
+not `latest`, since that's what surfaced/fixed several of the issues in
+KNOWN-ISSUES.md. Switch to `@voiden/runner` (no `@beta`) once the team is off
+beta for good.
+
 ```bash
-npm install -g @voiden/runner
-voiden-runner run . --env .env --no-session
+npm install -g @voiden/runner@beta
+voiden-runner plugin update --all   # always do this right after installing/switching — see KNOWN-ISSUES.md
+voiden-runner run rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ --profile --no-session
 ```
 
 Everything targets public, no-signup APIs — [httpbin.org](https://httpbin.org)
@@ -45,24 +53,32 @@ Everything targets public, no-signup APIs — [httpbin.org](https://httpbin.org)
 [DeepWiki's public MCP server](https://mcp.deepwiki.com/mcp) (MCP) — so this
 runs the same way for anyone, no credentials needed.
 
-**Two env files, on purpose:**
-- **`.env`** (repo root) — flat `KEY=value`, what `@voiden/runner@2.2.0`
-  actually reads today via `--env`.
-- **`.voiden/env-public.yaml`** — the same variables in the format the
-  **Voiden app's** own Environment Editor reads. The CLI doesn't consume this
-  one yet (see KNOWN-ISSUES.md's last section) — keep both in sync until it
-  does.
+**`.voiden/env-public.yaml`** is the source of truth — it's what `--profile`
+reads, and it's what the **Voiden app's** own Environment Editor reads too, so
+one file covers both. A flat **`.env`** is also kept at the repo root, with
+the same values, purely as a fallback for anyone still running the `latest`
+(stable) channel, where `--profile` doesn't exist yet — use `--env .env` there
+instead of `--profile`. Keep both in sync if you add a variable; drop `.env`
+entirely once the team is fully off stable.
 
 Open the repo in the Voiden app directly to browse/run files interactively
 instead — no separate setup needed there, the app reads `.voiden/env-public.yaml`.
+
+**Heads up on `crud-and-chaining/` and `mcp/tool-decorated-request.void`:**
+both hit reqres.in, whose anonymous tier is capped at 40 requests/day per IP —
+easy to exhaust during active local testing (it happened while building this
+repo). A `429 rate_limit_exceeded` from those two files specifically is
+almost always this, not a real failure — see KNOWN-ISSUES.md's last section.
 
 ## Known issues
 
 Several `assertions-table` rows in this repo are intentionally `disabled: true`
 with an inline comment pointing here, rather than deleted — they document a
-real, reproduced gap in `@voiden/runner@2.2.0`, not a mistake in the fixture.
-Full repro steps for each: **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**. Re-enable
-each row once its underlying issue is fixed.
+real, reproduced gap, not a mistake in the fixture. One whole file
+(`known-broken-under-beta/auth-types.void`) is excluded from CI entirely for
+the same reason. Full repro steps for each, plus which are stable-only,
+beta-only, or both: **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**. Re-enable a row
+(or move the file back) once its underlying issue is fixed.
 
 ## Contributing more scenarios
 

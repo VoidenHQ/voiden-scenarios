@@ -89,6 +89,12 @@ content:
           required: true
           description: "Email address for the new customer."
           source: agent
+        - name: reqres_url
+          binds: REQRES_URL
+          type: string
+          required: true
+          description: "Base URL of the reqres.in API, resolved from the server process's own environment — never agent-supplied."
+          source: environment
   - type: toolverifies
     attrs:
       uid: "ff51d0cb-3c86-4e9d-bc0f-e35e527c1a17"

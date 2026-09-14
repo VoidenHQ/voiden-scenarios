@@ -12,3 +12,9 @@
 
 # Node (only relevant if voiden-runner is installed locally instead of via CI action)
 node_modules/
+
+# Voiden
+.voiden/*
+!.voiden/env-public.yaml
+!.voiden/env-*-public.yaml
+.voiden-inherited.void

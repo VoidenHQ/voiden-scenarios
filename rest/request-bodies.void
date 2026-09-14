@@ -233,14 +233,12 @@ content:
     rows:
       - attrs: { disabled: false }
         row: ["Status is 200", "status", "equals", "200"]
-      - attrs: { disabled: true }
+      - attrs: { disabled: false }
         row: ["name field received", "body.form.name", "equals", "Voiden Scenarios"]
-      - attrs: { disabled: true }
+      - attrs: { disabled: false }
         row: ["role field received", "body.form.role", "equals", "tester"]
 ---
 ```
-
-The two disabled rows above are a known issue, not a mistake in this fixture — `multipart-table` sends no body at all headlessly. See `KNOWN-ISSUES.md`. Re-enable once fixed.
 
 ```void
 ---
@@ -296,11 +294,9 @@ content:
     rows:
       - attrs: { disabled: false }
         row: ["Status is 200", "status", "equals", "200"]
-      - attrs: { disabled: true }
+      - attrs: { disabled: false }
         row: ["username field received", "body.form.username", "equals", "voiden_tester"]
-      - attrs: { disabled: true }
+      - attrs: { disabled: false }
         row: ["Content-Type sent as urlencoded", "requestHeader.Content-Type", "contains", "application/x-www-form-urlencoded"]
 ---
 ```
-
-The two disabled rows above are a known issue, not a mistake in this fixture — `url-table` sends no body at all headlessly (no Content-Type, no form data). See `KNOWN-ISSUES.md`. Re-enable once fixed.

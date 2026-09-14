@@ -21,21 +21,39 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install @voiden/runner
-        run: npm install -g @voiden/runner
+      # This repo targets the beta channel on purpose — see README.md and
+      # KNOWN-ISSUES.md. Switch to `@voiden/runner` (no @beta) once the team
+      # moves off beta for good.
+      - name: Install @voiden/runner (beta channel)
+        run: npm install -g @voiden/runner@beta
 
-      # `--stop-on-failure` (and every other exit-code flag @voiden/runner@2.2.0
-      # has) only reacts to a request-level failure (network error, unresolved
-      # variable, timeout, ...) — a *failed assertion* leaves the process exit
-      # code at 0 and doesn't count in the printed summary either. See
-      # KNOWN-ISSUES.md #0. Until that's fixed upstream, this workflow reads
-      # the JSON report itself and fails the job on any assertion whose
-      # `passed` is false — don't remove this step believing --stop-on-failure
-      # already covers it.
-      - name: Run every .void file in this repo
+      # Core and plugins are versioned/cached separately (~/.voiden/extensions).
+      # A fresh global install doesn't imply fresh plugins — always update
+      # right after, or you'll chase a phantom "regression" that's really just
+      # a stale plugin talking to a newer core. See KNOWN-ISSUES.md's opening note.
+      - name: Update bundled plugins to match
+        run: voiden-runner plugin update --all
+
+      # `--profile` reads .voiden/env-public.yaml directly (works as of beta —
+      # see KNOWN-ISSUES.md's "Fixed between 2.2.0 and beta" section) instead
+      # of needing a separate flat .env file.
+      #
+      # `--stop-on-failure` (and every other exit-code flag @voiden/runner has,
+      # even in beta) only reacts to a request-level failure (network error,
+      # unresolved variable, timeout, ...) — a *failed assertion* leaves the
+      # process exit code at 0 and doesn't count in the printed summary either.
+      # See KNOWN-ISSUES.md #0. Until that's fixed upstream, this workflow
+      # reads the JSON report itself and fails the job on any assertion whose
+      # `passed` is false — don't remove the next step believing
+      # --stop-on-failure already covers it.
+      # Explicit paths, not "." — known-broken-under-beta/ is deliberately
+      # excluded (see that folder's file header and KNOWN-ISSUES.md #1/#2);
+      # add a new top-level folder to this list when you add one.
+      - name: Run every .void file in this repo (except known-broken-under-beta/)
         run: |
-          voiden-runner run . \
-            --env .env \
+          voiden-runner run \
+            rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ \
+            --profile \
             --no-session \
             --show-req \
             --show-res \
