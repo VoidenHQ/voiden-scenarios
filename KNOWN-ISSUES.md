@@ -109,7 +109,22 @@ matching httpbin endpoint.
 All three row values are authored as plain literal strings in the `auth`
 block's table (not `{{}}` template refs), same shape used everywhere else in
 this repo, so it isn't a template-substitution issue — the table's Value
-column just isn't reaching the request under this plugin/core pairing.
+column just isn't reaching the request under this plugin/core pairing. In
+`imported/from-postman/widgets.void`, `imported/from-openapi/widgets.void`,
+and `imported/from-bruno/widgets.void` this also happens with a `{{API_TOKEN}}`
+template value, not just a literal one — same empty-token symptom either way.
+
+**Real-world impact, not just an isolated test case:** every `auth`-block
+section in `imported/` (9 sections across those 3 files) carries this same
+bug, and — unlike the dedicated repro above — `httpbin.org`'s plain
+`/get`/`/anything`/`/post`/`/put` routes don't enforce auth at all, so the
+requests still return `200` and every *other* assertion still passes. The bug
+is completely invisible unless something specifically checks
+`requestHeader.Authorization`, which is exactly what those 9 disabled rows do
+(see `imported/README.md`). `imported/from-insomnia/widgets.void`'s equivalent
+rows are enabled and pass, since Insomnia's mapping puts auth in a
+`headers-table` instead of an `auth` block — unaffected by this bug, and
+proof the underlying request mechanics are otherwise fine.
 
 ## 2. Digest auth doesn't complete the challenge/response round trip headlessly
 
@@ -174,6 +189,35 @@ response body — right around where the real answer would have arrived.
 Unclear whether it's a hard client-side timeout or the interim
 `notifications/message` events aren't handled — worth a closer look, since any
 tool whose backing service legitimately takes 15s+ will hit the same wall.
+
+---
+
+## 6. `openapispecLink`'s live response validation — unclear, not confirmed either way
+
+**File:** `imported/from-openapi/widgets.void` — every section has one. The
+OpenAPI importer skill documents this block as triggering real, live
+validation of each response against the linked spec ("Voiden's own
+post-response pipeline looks for this block... and validates the actual HTTP
+response... against what that operation documents"). Running the file under
+`@voiden/runner@2.3.0-beta.19` shows no sign of it — no extra console output,
+no extra field anywhere in `--output-json`'s `reportEntries[]` — but also no
+error. Logged as **unclear**, not broken: could be an app-UI-only feature not
+wired into the headless CLI at all, or it could validate silently and only
+surface something on an actual mismatch (not tested — every response here
+happens to match the spec). Worth someone with access to the plugin's source
+confirming which.
+
+## The installed `voiden` skill is missing the Insomnia importer entirely
+
+Not a runner bug, but adjacent enough to note here: `~/.claude/skills/voiden/SKILL.md`
+has full Postman/OpenAPI/Bruno importer sections but **no Insomnia section at
+all** — only passing mentions of Insomnia inside the other three's text. The
+actual mapping guidance exists, just not synced into the installed skill —
+it's sitting in the plugin's own source at
+`plugins/insomnia-importer/src/skill.md` in the voiden monorepo.
+`imported/from-insomnia/widgets.void` was generated from that source file
+directly. Worth fixing the sync so the installed skill matches what the
+plugin itself documents.
 
 ---
 

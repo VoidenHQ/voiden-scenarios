@@ -1,0 +1,89 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-14T10:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.6.1",
+  "resources": [
+    {
+      "_id": "wrk_widgetapi",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "Widget API",
+      "description": "Same 4-operation Widget API as importers/postman, importers/openapi, and importers/bruno — path params, query params, a JSON body, a multipart upload, bearer auth, and a pre-request/after-response script pair. Every request runs against httpbin.org for real."
+    },
+    {
+      "_id": "fld_widgets",
+      "_type": "request_group",
+      "parentId": "wrk_widgetapi",
+      "name": "Widgets"
+    },
+    {
+      "_id": "req_list_widgets",
+      "_type": "request",
+      "parentId": "fld_widgets",
+      "name": "List Widgets",
+      "method": "GET",
+      "url": "{{ _.BASE_URL }}/get",
+      "parameters": [
+        { "name": "page", "value": "1" },
+        { "name": "limit", "value": "20" }
+      ],
+      "headers": [],
+      "authentication": { "type": "bearer", "token": "{{ _.API_TOKEN }}", "prefix": "Bearer" }
+    },
+    {
+      "_id": "req_get_widget",
+      "_type": "request",
+      "parentId": "fld_widgets",
+      "name": "Get Widget",
+      "method": "GET",
+      "url": "{{ _.BASE_URL }}/anything/:id",
+      "parameters": [],
+      "headers": [],
+      "authentication": { "type": "bearer", "token": "{{ _.API_TOKEN }}", "prefix": "Bearer" }
+    },
+    {
+      "_id": "req_create_widget",
+      "_type": "request",
+      "parentId": "fld_widgets",
+      "name": "Create Widget",
+      "method": "POST",
+      "url": "{{ _.BASE_URL }}/post",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "authentication": { "type": "bearer", "token": "{{ _.API_TOKEN }}", "prefix": "Bearer" },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Widget Alpha\",\n  \"price\": 19.99\n}"
+      },
+      "preRequestScript": "insomnia.request.addHeader({key: \"X-Request-Time\", value: String(Date.now())});\nconsole.log(\"Sending create-widget request\");",
+      "afterResponseScript": "insomnia.test(\"Create widget succeeds\", function () {\n    insomnia.expect(insomnia.response.code).to.eql(200);\n    insomnia.expect(insomnia.response.json().json).to.have.property(\"name\");\n});"
+    },
+    {
+      "_id": "req_upload_widget_asset",
+      "_type": "request",
+      "parentId": "fld_widgets",
+      "name": "Upload Widget Asset",
+      "method": "POST",
+      "url": "{{ _.BASE_URL }}/post",
+      "headers": [],
+      "authentication": { "type": "bearer", "token": "{{ _.API_TOKEN }}", "prefix": "Bearer" },
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          { "name": "title", "value": "Widget Photo" },
+          { "name": "asset", "type": "file", "fileName": "assets/widget.png" }
+        ]
+      }
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_widgetapi",
+      "name": "Base Environment",
+      "data": {
+        "BASE_URL": "https://httpbin.org",
+        "API_TOKEN": "widget-demo-token"
+      }
+    }
+  ]
+}

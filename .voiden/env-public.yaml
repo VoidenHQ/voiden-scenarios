@@ -5,3 +5,5 @@ default:
     REQRES_URL: "https://reqres.in/api"
     GRAPHQL_URL: "https://countries.trevorblades.com/graphql"
     MCP_DEEPWIKI_URL: "https://mcp.deepwiki.com/mcp"
+    BASE_URL: "https://httpbin.org"
+    API_TOKEN: "widget-demo-token"

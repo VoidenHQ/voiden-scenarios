@@ -1,0 +1,117 @@
+openapi: 3.0.3
+info:
+  title: Widget API
+  description: >
+    Same 4-operation Widget API as importers/postman, importers/insomnia, and
+    importers/bruno — path params, query params, a JSON body, and a
+    multipart upload, all under bearer auth. No scripting here on purpose —
+    OpenAPI documents carry no scripting, unlike the other three formats.
+    Every operation resolves to a real httpbin.org endpoint.
+  version: 1.0.0
+servers:
+  - url: https://httpbin.org
+    description: Public echo API used for live verification
+security:
+  - bearerAuth: []
+paths:
+  /get:
+    get:
+      operationId: listWidgets
+      tags: [Widgets]
+      summary: List Widgets
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: A page of widgets (httpbin echoes the query back under `args`)
+          content:
+            application/json:
+              schema:
+                type: object
+  /anything/{id}:
+    get:
+      operationId: getWidget
+      tags: [Widgets]
+      summary: Get Widget
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: widget-42
+      responses:
+        "200":
+          description: The widget (httpbin's /anything echoes the resolved URL back under `url`)
+          content:
+            application/json:
+              schema:
+                type: object
+  /post:
+    post:
+      operationId: createWidget
+      tags: [Widgets]
+      summary: Create Widget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, price]
+              properties:
+                name:
+                  type: string
+                  example: Widget Alpha
+                price:
+                  type: number
+                  format: float
+                  example: 19.99
+      responses:
+        "200":
+          description: The created widget (httpbin echoes the sent body back under `json`)
+          content:
+            application/json:
+              schema:
+                type: object
+  /put:
+    put:
+      operationId: uploadWidgetAsset
+      tags: [Widgets]
+      summary: Upload Widget Asset
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Widget Photo
+                asset:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Upload accepted (httpbin echoes the fields back under `form`/`files`)
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

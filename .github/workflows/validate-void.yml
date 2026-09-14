@@ -52,7 +52,7 @@ jobs:
       - name: Run every .void file in this repo (except known-broken-under-beta/)
         run: |
           voiden-runner run \
-            rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ \
+            rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ imported/ \
             --profile \
             --no-session \
             --show-req \

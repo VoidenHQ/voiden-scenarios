@@ -29,9 +29,11 @@ as:
 | [`mcp/`](mcp/) | MCP client (`mcp-connection`) against a real third-party server, plus a `/tool`-decorated request for `voiden-mcp-tool` |
 | [`multi-section/`](multi-section/) | `request-separator` sectioning + cross-section chaining, isolated from any specific resource |
 | [`known-broken-under-beta/`](known-broken-under-beta/) | Auth types (Bearer, Basic, API Key, Digest) — **excluded from CI on purpose**, see that folder's file header and KNOWN-ISSUES.md #1/#2 |
+| [`importers/`](importers/) | The *same* Widget API (query/path params, JSON body, multipart upload, bearer auth, scripting) hand-written once per tool — Postman, Insomnia, OpenAPI, Bruno — in each one's own native format |
+| [`imported/`](imported/) | Those four native collections generated into `.void` form, one folder per source tool, so you can compare what each importer's mapping actually produces side by side — see `imported/README.md` |
 
-Not covered yet (next pass, see the bottom of this file): importers (Postman/
-Bruno/Insomnia/HAR/OpenAPI), sockets/gRPC, the stitch runner, and faker.
+Not covered yet (next pass): HAR importer, sockets/gRPC, the stitch runner,
+and faker.
 
 ## Running it
 
@@ -44,7 +46,7 @@ beta for good.
 ```bash
 npm install -g @voiden/runner@beta
 voiden-runner plugin update --all   # always do this right after installing/switching — see KNOWN-ISSUES.md
-voiden-runner run rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ --profile --no-session
+voiden-runner run rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ imported/ --profile --no-session
 ```
 
 Everything targets public, no-signup APIs — [httpbin.org](https://httpbin.org)
