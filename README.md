@@ -5,9 +5,12 @@ against real public APIs** — no mocks — so running this repo is an actual
 end-to-end check of Voiden itself, not just a syntax sample. Built to double
 as:
 
-1. A CI fixture — `.github/workflows/validate-void.yml` runs the whole repo
-   with `@voiden/runner` on every push/PR, the way a team adopting Voiden
-   would wire it into their own CI.
+1. A CI fixture *and* a local one — `.github/workflows/validate-void.yml`
+   runs `Automated Tests/` with `@voiden/runner` on every push/PR, the way a
+   team adopting Voiden would wire it into their own CI, but the exact same
+   folders run identically from your own terminal (see "Running it" below)
+   or opened directly in the Voiden app — CI isn't required to exercise any
+   of this.
 2. A living reference — one file per feature area, meant to be opened in the
    Voiden app and read, not just executed.
 3. A regression net for the beta — see **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**.
@@ -19,11 +22,12 @@ as:
 
 ## Layout
 
-Two top-level groups, so it's obvious at a glance what CI actually runs and
-what needs a human:
+Two top-level groups, so it's obvious at a glance which files are fully
+scripted (no human needed to complete a run) versus which genuinely require
+one:
 
-- **[`Automated Tests/`](Automated%20Tests/)** — every folder `validate-void.yml` runs on every push/PR (except `Known Broken (Beta)/`, see below).
-- **[`Manual Testing/`](Manual%20Testing/)** — everything that needs a human, a browser, real credentials, or a connected agent. **Not run by CI at all.**
+- **[`Automated Tests/`](Automated%20Tests/)** — fully scripted, assertion-checked, no human interaction needed to complete a run. That's what makes it CI-safe: `validate-void.yml` runs every folder here on every push/PR (except `Known Broken (Beta)/`, see below) — but **it's just as runnable from your own machine**, with the exact same `voiden-runner run` commands (see "Running it" below), or by opening any file in the Voiden app and hitting Run. CI running it isn't what makes it "automated" — being fully scripted is; CI is just one more place that happens to run it unattended.
+- **[`Manual Testing/`](Manual%20Testing/)** — the opposite: everything that genuinely needs a human, a browser, real credentials, or a connected agent to complete. **Not run by CI at all** — CI simply can't do these unattended, but you still run them yourself locally the same way.
 
 ### `Automated Tests/`
 
