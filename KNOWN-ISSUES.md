@@ -83,7 +83,7 @@ misleading by default.
 
 ## 1. `bearer`/`basic`/`apiKey` auth send empty credentials — **beta-only regression**
 
-**File:** `known-broken-under-beta/auth-types.void` — "Bearer Token", "Basic Auth", "API Key"
+**File:** `Automated Tests/Known Broken (Beta)/Auth Types.void` — "Bearer Token", "Basic Auth", "API Key"
 sections. **Not present in `@voiden/runner@2.2.0`** — all three worked
 correctly there. Broken under `@voiden/runner@2.3.0-beta.19`, confirmed with
 `voiden-advanced-auth` already at its latest registry version (no update
@@ -95,7 +95,7 @@ this plugin yet.
 
 **Repro:**
 ```
-voiden-runner run known-broken-under-beta/auth-types.void --env .env --no-session --show-req
+voiden-runner run "Automated Tests/Known Broken (Beta)/Auth Types.void" --env .env --no-session --show-req
 ```
 **Expected:** `Authorization: Bearer voiden-demo-token`,
 `Authorization: Basic dm9pZGVuOnNjZW5hcmlvcw==` (voiden:scenarios), and an
@@ -109,30 +109,32 @@ matching httpbin endpoint.
 All three row values are authored as plain literal strings in the `auth`
 block's table (not `{{}}` template refs), same shape used everywhere else in
 this repo, so it isn't a template-substitution issue — the table's Value
-column just isn't reaching the request under this plugin/core pairing. In
-`imported/from-postman/widgets.void`, `imported/from-openapi/widgets.void`,
-and `imported/from-bruno/widgets.void` this also happens with a `{{API_TOKEN}}`
-template value, not just a literal one — same empty-token symptom either way.
+column just isn't reaching the request under this plugin/core pairing. This
+was also confirmed with a `{{API_TOKEN}}` template value, not just a literal
+one — same empty-token symptom either way — in the Postman/OpenAPI/Bruno
+generated-`.void` comparison files that used to live under `imported/`
+(removed in the September 16 cleanup; see the "Layout" note in README.md).
 
-**Real-world impact, not just an isolated test case:** every `auth`-block
-section in `imported/` (9 sections across those 3 files) carries this same
-bug, and — unlike the dedicated repro above — `httpbin.org`'s plain
+**Real-world impact, not just an isolated test case:** at the time, every
+`auth`-block section across those three files (9 sections total) carried this
+same bug, and — unlike the dedicated repro above — `httpbin.org`'s plain
 `/get`/`/anything`/`/post`/`/put` routes don't enforce auth at all, so the
-requests still return `200` and every *other* assertion still passes. The bug
-is completely invisible unless something specifically checks
-`requestHeader.Authorization`, which is exactly what those 9 disabled rows do
-(see `imported/README.md`). `imported/from-insomnia/widgets.void`'s equivalent
-rows are enabled and pass, since Insomnia's mapping puts auth in a
-`headers-table` instead of an `auth` block — unaffected by this bug, and
-proof the underlying request mechanics are otherwise fine.
+requests still returned `200` and every *other* assertion still passed. The
+bug is completely invisible unless something specifically checks
+`requestHeader.Authorization`. The Insomnia-generated equivalent's rows were
+enabled and passed, since Insomnia's mapping puts auth in a `headers-table`
+instead of an `auth` block — unaffected by this bug, and proof the underlying
+request mechanics are otherwise fine. The root cause (this issue) is still
+live and reproducible via `Automated Tests/Known Broken (Beta)/Auth
+Types.void` above regardless of `imported/`'s removal.
 
 ## 2. Digest auth doesn't complete the challenge/response round trip headlessly
 
-**File:** `known-broken-under-beta/auth-types.void` — "Digest Auth" section. **Present in both**
+**File:** `Automated Tests/Known Broken (Beta)/Auth Types.void` — "Digest Auth" section. **Present in both**
 `2.2.0` and `2.3.0-beta.19`.
 **Repro:**
 ```
-voiden-runner run known-broken-under-beta/auth-types.void --env .env --show-req --show-res
+voiden-runner run "Automated Tests/Known Broken (Beta)/Auth Types.void" --env .env --show-req --show-res
 ```
 **Expected:** `voiden-runner` sends the initial request, receives httpbin's
 `401` + `WWW-Authenticate: Digest ...` challenge, computes the digest, and
@@ -143,12 +145,12 @@ re-sends — ending in `200`, `body.authenticated: true`.
 
 ## 3. `options-table`'s `follow_redirects: false` is not respected headlessly
 
-**File:** `rest/options-and-cookies.void` — "Redirect Handling" section.
+**File:** `Automated Tests/REST/Options and Cookies.void` — "Redirect Handling" section.
 **Present in both** `2.2.0` and `2.3.0-beta.19` (re-verified after the
 `voiden-rest-api@1.4.13` update — still broken).
 **Repro:**
 ```
-voiden-runner run rest/options-and-cookies.void --env .env --show-req --show-res
+voiden-runner run "Automated Tests/REST/Options and Cookies.void" --env .env --show-req --show-res
 ```
 **Expected:** `GET /redirect/1` with `follow_redirects: false` stops at
 httpbin's own `302` (`Location: /get`).
@@ -157,7 +159,7 @@ httpbin's own `302` (`Location: /get`).
 
 ## 4. `cookies-table` rows never reach the wire headlessly
 
-**File:** `rest/options-and-cookies.void` — "Cookies" section. **Present in
+**File:** `Automated Tests/REST/Options and Cookies.void` — "Cookies" section. **Present in
 both** `2.2.0` and `2.3.0-beta.19` (re-verified after the update — still
 broken).
 **Repro:** same command as #3.
@@ -168,7 +170,7 @@ header was ever sent.
 
 ## 5. MCP client and DeepWiki's `ask_question` tool (slow calls / SSE progress notifications)
 
-**File:** N/A — deliberately left out of `mcp/deepwiki-tool-call.void` so the
+**File:** N/A — deliberately left out of `Automated Tests/MCP/DeepWiki Tool Call.void` so the
 fixture stays deterministic; found under `2.2.0`, not re-verified under beta
 (the section was replaced with `read_wiki_contents` rather than re-tested,
 since its backing behavior — DeepWiki's own response latency — doesn't depend
@@ -194,8 +196,10 @@ tool whose backing service legitimately takes 15s+ will hit the same wall.
 
 ## 6. `openapispecLink`'s live response validation — unclear, not confirmed either way
 
-**File:** `imported/from-openapi/widgets.void` — every section has one. The
-OpenAPI importer skill documents this block as triggering real, live
+**File:** the OpenAPI-generated comparison file that used to live at
+`imported/from-openapi/widgets.void` (removed in the September 16 cleanup) —
+every section had one. The OpenAPI importer skill documents this block as
+triggering real, live
 validation of each response against the linked spec ("Voiden's own
 post-response pipeline looks for this block... and validates the actual HTTP
 response... against what that operation documents"). Running the file under
@@ -209,10 +213,10 @@ confirming which.
 
 ## 7. `mcp serve [path]` silently breaks `--profile` when `path` is a specific file, not a project directory
 
-**Found via:** `local-testing/tool-scenario/widget-tools.void`.
+**Found via:** `Manual Testing/Tool Scenario/Widget Tools.void`.
 **Repro:**
 ```
-voiden-runner mcp serve local-testing/tool-scenario/widget-tools.void --check --profile
+voiden-runner mcp serve "Manual Testing/Tool Scenario/Widget Tools.void" --check --profile
 # vs.
 voiden-runner mcp serve . --check --profile
 ```
@@ -237,10 +241,11 @@ has full Postman/OpenAPI/Bruno importer sections but **no Insomnia section at
 all** — only passing mentions of Insomnia inside the other three's text. The
 actual mapping guidance exists, just not synced into the installed skill —
 it's sitting in the plugin's own source at
-`plugins/insomnia-importer/src/skill.md` in the voiden monorepo.
-`imported/from-insomnia/widgets.void` was generated from that source file
-directly. Worth fixing the sync so the installed skill matches what the
-plugin itself documents.
+`plugins/insomnia-importer/src/skill.md` in the voiden monorepo. The
+Insomnia-generated comparison file that used to live at
+`imported/from-insomnia/widgets.void` (removed in the September 16 cleanup)
+was generated from that source file directly. Worth fixing the sync so the
+installed skill matches what the plugin itself documents.
 
 ---
 
@@ -248,11 +253,11 @@ plugin itself documents.
 
 - **`multipart-table` sending no body headlessly** — fixed by the
   `voiden-rest-api@1.4.13` update (see the stale-plugin-cache note at the top
-  of this file). Confirmed working: `rest/request-bodies.void`'s "Multipart
+  of this file). Confirmed working: `Automated Tests/REST/Request Bodies.void`'s "Multipart
   Form" section now correctly sends `name`/`role` and httpbin echoes them back
   in `body.form`.
 - **`url-table` (form-urlencoded) sending no body headlessly** — same fix,
-  same plugin update. `rest/request-bodies.void`'s "URL-Encoded Form" section
+  same plugin update. `Automated Tests/REST/Request Bodies.void`'s "URL-Encoded Form" section
   now sends `Content-Type: application/x-www-form-urlencoded` and the correct
   `username=...&source=...` body.
 - **`--profile` / `.voiden/env-*.yaml` support in the CLI** — didn't exist in
@@ -266,7 +271,7 @@ plugin itself documents.
 - **The `/tool` extension's CLI surface** — `voiden-runner tool list`,
   `tool verify`, and `mcp serve [--http|--check]` didn't exist in `2.2.0`
   (`error: unknown command 'tool'`). All present and working in beta — see
-  `mcp/tool-decorated-request.void`'s header comment for the exact commands.
+  `Automated Tests/MCP/Tool Decorated Request.void`'s header comment for the exact commands.
   One real fixture bug this surfaced: `tool verify` initially reported
   `create_customer` as `excluded` with
   `[unresolved-placeholder] Tool "create_customer" request uses
@@ -280,7 +285,7 @@ plugin itself documents.
 
 ## Confirmed working exactly as documented — the good news
 
-`local-testing/tool-scenario/widget-tools.void` was purpose-built with five
+`Manual Testing/Tool Scenario/Widget Tools.void` was purpose-built with five
 tools, each targeting a different verification outcome (verified / failing
 + `withdraw` / failing + `advertise-degraded` / unverified / auth-check
 gating a correct happy-path). `voiden-runner tool verify` and
@@ -298,8 +303,8 @@ completely under direct, deliberate stress-testing.
 
 **reqres.in's anonymous tier is 40 requests/day per IP**, and this repo's own
 testing hit that limit outright mid-session (`429 rate_limit_exceeded`),
-blocking `crud-and-chaining/users-crud.void` and
-`mcp/tool-decorated-request.void` for the rest of the day. Every fixture in
+blocking `Automated Tests/CRUD and Chaining/Users CRUD.void` and
+`Automated Tests/MCP/Tool Decorated Request.void` for the rest of the day. Every fixture in
 this repo that hits `reqres.in` will fail this way if the limit is already
 spent by other testing on the same IP/CI runner pool — a real flakiness risk
 for `validate-void.yml` specifically, since GitHub-hosted runners share IP

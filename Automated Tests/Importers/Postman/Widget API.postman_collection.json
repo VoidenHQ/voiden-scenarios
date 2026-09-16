@@ -1,0 +1,124 @@
+{
+  "info": {
+    "_postman_id": "0bff97d4-7d35-412b-96a4-9a54420ffbae",
+    "name": "Widget API",
+    "description": "Same 4-operation Widget API as Automated Tests/Importers/Insomnia, Automated Tests/Importers/OpenAPI, and Automated Tests/Importers/Bruno — path params, query params, a JSON body, a multipart upload, bearer auth, and a pre-request/test script pair. Every request runs against httpbin.org for real.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Widgets",
+      "item": [
+        {
+          "name": "List Widgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{API_TOKEN}}", "type": "string" }]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/get?page=1&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Widget",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{API_TOKEN}}", "type": "string" }]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/anything/:id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["anything", ":id"],
+              "variable": [{ "key": "id", "value": "widget-42" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Widget",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.headers.add({key: \"X-Request-Time\", value: String(Date.now())});",
+                  "console.log(\"Sending create-widget request\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create widget succeeds\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().json).to.have.property(\"name\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{API_TOKEN}}", "type": "string" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Widget Alpha\",\n  \"price\": 19.99\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/post",
+              "host": ["{{BASE_URL}}"],
+              "path": ["post"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Widget Asset",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{API_TOKEN}}", "type": "string" }]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Widget Photo", "type": "text" },
+                { "key": "asset", "type": "file", "src": "assets/widget.png" }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/post",
+              "host": ["{{BASE_URL}}"],
+              "path": ["post"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -19,5 +19,6 @@ node_modules/
 !.voiden/env-*-public.yaml
 .voiden-inherited.void
 .voiden/**
-.voiden/history/auth-types-ba0ddf15-history.json
-.voiden/history/widgets-39e524ed-history.json
+# .voiden/history/ is per-editor undo history, always local-only — never
+# tracked here, so no per-file allowlist entries are needed (or kept in sync
+# with a renamed .void file's new history filename).

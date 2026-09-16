@@ -19,19 +19,31 @@ as:
 
 ## Layout
 
+Two top-level groups, so it's obvious at a glance what CI actually runs and
+what needs a human:
+
+- **[`Automated Tests/`](Automated%20Tests/)** — every folder `validate-void.yml` runs on every push/PR (except `Known Broken (Beta)/`, see below).
+- **[`Manual Testing/`](Manual%20Testing/)** — everything that needs a human, a browser, real credentials, or a connected agent. **Not run by CI at all.**
+
+### `Automated Tests/`
+
 | Folder | Covers |
 |---|---|
-| [`rest/`](rest/) | HTTP methods, headers/query/path tables, all body types, options-table, cookies-table |
-| [`crud-and-chaining/`](crud-and-chaining/) | Full CRUD + `runtime-variables` chaining across sections |
-| [`graphql/`](graphql/) | Queries with and without variables |
-| [`scripting/`](scripting/) | `pre_script`/`post_script` in all three languages (JS, Python, Shell) |
-| [`assertions/`](assertions/) | Every `assertions-table` operator |
-| [`mcp/`](mcp/) | MCP client (`mcp-connection`) against a real third-party server, plus a `/tool`-decorated request for `voiden-mcp-tool` |
-| [`multi-section/`](multi-section/) | `request-separator` sectioning + cross-section chaining, isolated from any specific resource |
-| [`known-broken-under-beta/`](known-broken-under-beta/) | Auth types (Bearer, Basic, API Key, Digest) — **excluded from CI on purpose**, see that folder's file header and KNOWN-ISSUES.md #1/#2 |
-| [`importers/`](importers/) | The *same* Widget API (query/path params, JSON body, multipart upload, bearer auth, scripting) hand-written once per tool — Postman, Insomnia, OpenAPI, Bruno — in each one's own native format |
-| [`imported/`](imported/) | Those four native collections generated into `.void` form, one folder per source tool, so you can compare what each importer's mapping actually produces side by side — see `imported/README.md` |
-| [`local-testing/`](local-testing/) | **Not run by CI at all** — manual checklists, a deliberately-mixed-state `/tool` scenario, AI-skill test prompts, and an OAuth fill-in-your-own-credentials template. See `local-testing/README.md` |
+| [`REST/`](Automated%20Tests/REST/) | HTTP methods, headers/query/path tables, all body types, options-table, cookies-table |
+| [`CRUD and Chaining/`](Automated%20Tests/CRUD%20and%20Chaining/) | Full CRUD + `runtime-variables` chaining across sections |
+| [`GraphQL/`](Automated%20Tests/GraphQL/) | Queries with and without variables |
+| [`Scripting/`](Automated%20Tests/Scripting/) | `pre_script`/`post_script` in all three languages (JS, Python, Shell) |
+| [`Assertions/`](Automated%20Tests/Assertions/) | Every `assertions-table` operator |
+| [`MCP/`](Automated%20Tests/MCP/) | MCP client (`mcp-connection`) against a real third-party server, plus a `/tool`-decorated request for `voiden-mcp-tool` |
+| [`Multi Section/`](Automated%20Tests/Multi%20Section/) | `request-separator` sectioning + cross-section chaining, isolated from any specific resource |
+| [`Importers/`](Automated%20Tests/Importers/) | The *same* Widget API (query/path params, JSON body, multipart upload, bearer auth, scripting) hand-written once per tool — Postman, Insomnia, OpenAPI, Bruno — in each one's own native format. Source fixtures only (not runnable `.void` files themselves), so excluded from the CI run command below |
+| [`Known Broken (Beta)/`](Automated%20Tests/Known%20Broken%20%28Beta%29/) | Auth types (Bearer, Basic, API Key, Digest) — **excluded from CI on purpose**, see that folder's file header and KNOWN-ISSUES.md #1/#2 |
+
+### `Manual Testing/`
+
+Manual checklists, a deliberately-mixed-state `/tool` scenario, AI-skill test
+prompts, and an OAuth fill-in-your-own-credentials template. See
+[`Manual Testing/README.md`](Manual%20Testing/README.md).
 
 Not covered yet (next pass): HAR importer, sockets/gRPC, the stitch runner,
 and faker.
@@ -47,7 +59,9 @@ beta for good.
 ```bash
 npm install -g @voiden/runner@beta
 voiden-runner plugin update --all   # always do this right after installing/switching — see KNOWN-ISSUES.md
-voiden-runner run rest/ assertions/ crud-and-chaining/ graphql/ mcp/ multi-section/ scripting/ imported/ --profile --no-session
+voiden-runner run "Automated Tests/REST" "Automated Tests/Assertions" "Automated Tests/CRUD and Chaining" \
+  "Automated Tests/GraphQL" "Automated Tests/MCP" "Automated Tests/Multi Section" "Automated Tests/Scripting" \
+  --profile --no-session
 ```
 
 Everything targets public, no-signup APIs — [httpbin.org](https://httpbin.org)
@@ -67,7 +81,7 @@ entirely once the team is fully off stable.
 Open the repo in the Voiden app directly to browse/run files interactively
 instead — no separate setup needed there, the app reads `.voiden/env-public.yaml`.
 
-**Heads up on `crud-and-chaining/` and `mcp/tool-decorated-request.void`:**
+**Heads up on `CRUD and Chaining/` and `MCP/Tool Decorated Request.void`:**
 both hit reqres.in, whose anonymous tier is capped at 40 requests/day per IP —
 easy to exhaust during active local testing (it happened while building this
 repo). A `429 rate_limit_exceeded` from those two files specifically is
@@ -78,14 +92,10 @@ almost always this, not a real failure — see KNOWN-ISSUES.md's last section.
 Several `assertions-table` rows in this repo are intentionally `disabled: true`
 with an inline comment pointing here, rather than deleted — they document a
 real, reproduced gap, not a mistake in the fixture. One whole file
-(`known-broken-under-beta/auth-types.void`) is excluded from CI entirely for
-the same reason. Full repro steps for each, plus which are stable-only,
-beta-only, or both: **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**. Re-enable a row
-(or move the file back) once its underlying issue is fixed.
-
-## Local-only testing (not run by CI)
-
-`local-testing/` holds everything that needs a human, a browser, real credentials, or a connected agent — an MCP feature checklist (with a purpose-built `/tool` fixture hitting every verification state on demand), a prompt library for testing the `voiden` skill's own generation quality, and an OAuth template covering every grant type. See `local-testing/README.md`.
+(`Automated Tests/Known Broken (Beta)/Auth Types.void`) is excluded from CI
+entirely for the same reason. Full repro steps for each, plus which are
+stable-only, beta-only, or both: **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)**.
+Re-enable a row (or move the file back) once its underlying issue is fixed.
 
 ## Contributing more scenarios
 
@@ -94,7 +104,7 @@ syntax) — see that skill (or the app's own slash commands) for the full
 block reference. Conventions used throughout this repo:
 - One file per feature area, multiple `request-separator` sections per file
   where it reads naturally as a group.
-- Every section ends with an `assertions-table` (or, in `scripting/`,
+- Every section ends with an `assertions-table` (or, in `Scripting/`,
   `voiden.assert` calls) that checks something real about the response —
   never just "status is 200" when a more specific check is available.
 - Fresh UUID v4 for every block `uid` — never copy one from another file.
