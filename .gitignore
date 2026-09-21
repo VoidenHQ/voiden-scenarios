@@ -22,3 +22,4 @@ node_modules/
 # .voiden/history/ is per-editor undo history, always local-only — never
 # tracked here, so no per-file allowlist entries are needed (or kept in sync
 # with a renamed .void file's new history filename).
+.voiden/history/Widget_Tools-334240c0-history.json
