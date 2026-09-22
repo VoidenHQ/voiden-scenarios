@@ -10,6 +10,11 @@ on:
     # just a Voiden regression) would otherwise only surface on the next PR.
     - cron: "0 6 * * 1"
   workflow_dispatch:
+  # Cross-repo trigger: VoidenHQ/voiden pings this on every push to its
+  # main or beta branch (see its .github/workflows/trigger-scenario-validation.yml),
+  # since a plain `push` trigger here can't listen to a different repo.
+  repository_dispatch:
+    types: [voiden-push]
 
 jobs:
   validate:
